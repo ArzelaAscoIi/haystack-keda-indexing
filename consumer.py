@@ -1,10 +1,11 @@
 from pathlib import Path
 from time import sleep
 from typing import List
-from config import LOCAL_DIR, S3_BUCKET, SQS_QUEUE
-from aws_service import AWSService
+
 import structlog
 
+from aws_service import AWSService
+from config import LOCAL_DIR, S3_BUCKET, SQS_QUEUE
 from pipeline import get_pipeline
 
 # To learn more about logging in python check out my other article

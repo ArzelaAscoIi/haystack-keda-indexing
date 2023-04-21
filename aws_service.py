@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Generator, List
 
 import boto3
-from config import AWS_ENDPOINT, AWS_REGION, LOCAL_DIR, SQS_QUEUE, S3_BUCKET
+
+from config import AWS_ENDPOINT, AWS_REGION, LOCAL_DIR, S3_BUCKET, SQS_QUEUE
 
 
 class SQSClient:
