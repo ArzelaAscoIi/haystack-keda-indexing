@@ -1,0 +1,61 @@
+# pipeline yaml from haystack: https://github.com/deepset-ai/templates/blob/69519af7178095d53cb5e879c8ac696d77c96aed/pipelines/GenerativeQuestionAnswering_gpt.yaml#L6
+
+version: "1.15.1"
+components:
+  - name: DocumentStore
+    type: InMemoryDocumentStore
+  - name: Retriever
+    type: EmbeddingRetriever
+    params:
+      document_store: DocumentStore
+      embedding_model: sentence-transformers/multi-qa-mpnet-base-dot-v1
+      model_format: sentence_transformers
+      top_k: 3
+  - name: AnswerGen
+    type: OpenAIAnswerGenerator
+    params:
+      model: text-davinci-003
+      api_key: <your-openai-api-key>
+      max_tokens: 200
+      temperature: 0.8
+      frequency_penalty: 0.1
+      presence_penalty: 0.1
+      top_k: 3
+  - name: FileTypeClassifier
+    type: FileTypeClassifier
+  - name: TextConverter
+    type: TextConverter
+  - name: PDFConverter
+    type: PDFToTextConverter
+  - name: Preprocessor
+    type: PreProcessor
+    params:
+      split_by: word
+      split_length: 250
+      split_overlap: 20
+      language: en
+      split_respect_sentence_boundary: True
+
+pipelines:
+  # not required in our case, but can be used to query the document store
+  # with haystack
+  - name: query
+    nodes:
+      - name: Retriever
+        inputs: [Query]
+      - name: AnswerGen
+        inputs: [Retriever]
+  - name: indexing
+    nodes:
+      - name: FileTypeClassifier
+        inputs: [File]
+      - name: TextConverter
+        inputs: [FileTypeClassifier.output_1]
+      - name: PDFConverter
+        inputs: [FileTypeClassifier.output_2]
+      - name: Preprocessor
+        inputs: [TextConverter, PDFConverter]
+      - name: Retriever
+        inputs: [Preprocessor]
+      - name: DocumentStore
+        inputs: [Retriever]
