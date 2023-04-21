@@ -11,4 +11,4 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
     volumes:
-      - ./localstack_bootstrap:/docker-entrypoint-initaws.d/
+      - ./scripts:/docker-entrypoint-initaws.d/
