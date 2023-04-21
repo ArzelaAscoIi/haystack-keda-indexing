@@ -7,8 +7,8 @@ services:
       - "127.0.0.1:4510-4559:4510-4559" # external services port range
     environment:
       - SERVICES=s3,sqs
-      # - DEFAULT_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
     volumes:
+      # startup script to create a sqs queue and a s3 bucket
       - ./scripts:/docker-entrypoint-initaws.d/
