@@ -30,4 +30,5 @@ while True:
     logger.info("Found files", files=files)
 
     # run indexing for downloaded files
-    pipeline.run(file_paths=files)
+    documents = pipeline.run(file_paths=files)
+    logger.info("Processed files", documents=documents)
