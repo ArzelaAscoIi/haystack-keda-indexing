@@ -1,0 +1,42 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: indexing-consumer
+  labels:
+    k8s-app: indexing-consumer
+spec:
+  # we want to start with 0 replicas and scale up on demand
+  replicas: 0
+  selector:
+    matchLabels:
+      k8s-app: indexing-consumer
+  template:
+    metadata:
+      name: indexing-consumer
+      labels:
+        k8s-app: indexing-consumer
+    spec:
+      containers:
+        - name: indexing-consumer
+          command: ["python3", "consumer.py"]
+          # public consumer image
+          image: arzelaascoli/keda-haystack-consumer:latest
+          env:
+            # localstack configuration
+            - name: AWS_ENDPOINT
+              value: http://localstack:4566
+            - name: AWS_REGION
+              value: eu-central-1
+            - name: AWS_ACCESS_KEY_ID
+              value: test
+            - name: AWS_SECRET_ACCESS_KEY
+              value: test
+          # Resource estimations
+          # TODO: adjust these to your needs and the load you expect
+          resources:
+            requests:
+              memory: 1000Mi
+              cpu: 750m
+            limits:
+              memory: 2500Mi
+              cpu: 2000m
