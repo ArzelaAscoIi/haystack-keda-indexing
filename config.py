@@ -9,4 +9,4 @@ SQS_QUEUE = os.getenv("SQS_QUEUE", "test-queue")
 S3_BUCKET = os.getenv("SQS_QUEUE", "test-bucket")
 
 # Local
-LOCAL_DIR = os.getenv("LOCAL_DIR", "/tmp")
+LOCAL_DOWNLOAD_DIR = os.getenv("LOCAL_DOWNLOAD_DIR", "/tmp")

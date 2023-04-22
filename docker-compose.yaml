@@ -12,3 +12,13 @@ services:
     volumes:
       # startup script to create a sqs queue and a s3 bucket
       - ./scripts:/docker-entrypoint-initaws.d/
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - AWS_ENDPOINT=http://localstack:4566
+      - AWS_REGION=eu-central-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test

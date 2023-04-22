@@ -2,12 +2,16 @@
 
 version: "1.15.1"
 components:
-  - name: DocumentStore
-    type: InMemoryDocumentStore
+  ## Uncomment if you have running an OpenSearch instance
+  # - name: DocumentStore
+  #   type: OpenSearchDocumentStore
+  #   params:
+  #     user: <your-opensearch-user>
+  #     password: <your-opensearch-password>
   - name: Retriever
     type: EmbeddingRetriever
     params:
-      document_store: DocumentStore
+      # document_store: DocumentStore # uncomment to connect the retriever to an OpenSearch instance
       embedding_model: sentence-transformers/multi-qa-mpnet-base-dot-v1
       model_format: sentence_transformers
       top_k: 3
@@ -57,5 +61,10 @@ pipelines:
         inputs: [TextConverter, PDFConverter]
       - name: Retriever
         inputs: [Preprocessor]
-      - name: DocumentStore
-        inputs: [Retriever]
+      ## Uncomment if you have running a document store.
+      ## For this tutorial we will generate embeddings and documents,
+      ## but not store them in a document store, to keep it generic.
+      ## You can use any of haystack's document stores here.
+      ## Docs: https://docs.haystack.deepset.ai/docs/document_store
+      # - name: DocumentStore
+      #   inputs: [Retriever]

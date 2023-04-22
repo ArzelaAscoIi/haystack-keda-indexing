@@ -5,13 +5,15 @@ from typing import Generator, List
 
 import boto3
 
-from config import AWS_ENDPOINT, AWS_REGION, LOCAL_DIR, S3_BUCKET, SQS_QUEUE
+from config import AWS_ENDPOINT, AWS_REGION
 
 
 class SQSClient:
     def __init__(self, queue_name: str) -> None:
         self.sqs = boto3.client(
-            "sqs", endpoint_url=AWS_ENDPOINT, region_name=AWS_REGION
+            "sqs",
+            endpoint_url=AWS_ENDPOINT,  # allows using localstack
+            region_name=AWS_REGION,  # allows using localstack
         )
         self.queue_name = queue_name
 
@@ -19,7 +21,7 @@ class SQSClient:
         """
         Publish key to SQS queue
 
-        :param key: Key to publish
+        :param key: s3 Key to publish
         """
         queue = self.sqs.get_queue_url(QueueName=self.queue_name)
         self.sqs.send_message(QueueUrl=queue["QueueUrl"], MessageBody=key)
@@ -31,16 +33,22 @@ class SQSClient:
         :returns List of keys on s3
         """
         queue = self.sqs.get_queue_url(QueueName=self.queue_name)
+        # receive up to 10 messages at once from sqs
         response = self.sqs.receive_message(
             QueueUrl=queue["QueueUrl"],
             MaxNumberOfMessages=10,
             WaitTimeSeconds=0,
         )
+        # get s3 keys from sqs messages
         messages = response.get("Messages", [])
         s3_keys = [message["Body"] for message in messages]
 
         try:
+            # We are using a context manager to ensure the messages
+            # are deleted from the queue after handling them was
+            # successful.
             yield s3_keys
+            # This will be run after the message was processed
             for message in messages:
                 self.sqs.delete_message(
                     QueueUrl=queue["QueueUrl"], ReceiptHandle=message["ReceiptHandle"]
@@ -50,15 +58,22 @@ class SQSClient:
 
 
 class S3Client:
-    def __init__(self, bucket_name: str, local_dir: str) -> None:
-        self.s3 = boto3.client("s3", endpoint_url=AWS_ENDPOINT, region_name=AWS_REGION)
+    def __init__(self, bucket_name: str, local_download_dir: str) -> None:
+        """
+        :param bucket_name: Name of the s3 bucket
+        :param local_download_dir: Local directory to download files to from s3
+        """
+        self.s3 = boto3.client(
+            "s3",
+            endpoint_url=AWS_ENDPOINT,  # allows using localstack
+            region_name=AWS_REGION,  # allows using localstack
+        )
         self.bucket_name = bucket_name
-        self.local_dir = local_dir
+        self.local_download_dir = local_download_dir
 
     def upload_file(self, local_path: Path) -> None:
         """
-        Upload file to s3
-
+        Upload file to s3 with the same name as the file on local filesystem.
         :param local_path: Path to file on local filesystem
         """
         file_name = os.path.basename(local_path)
@@ -73,7 +88,7 @@ class S3Client:
         """
         Download files from s3 to local directory.
 
-        TODO: Make this async
+        TODO: Make this async to speed up the upload process
         TODO: delete files from local directory after processing
 
         :param s3_keys: List of keys on s3
@@ -83,7 +98,7 @@ class S3Client:
         for s3_key in s3_keys:
             response = self.s3.get_object(Bucket=self.bucket_name, Key=s3_key)
             file_name = os.path.basename(s3_key)
-            local_path = os.path.join(self.local_dir, file_name)
+            local_path = os.path.join(self.local_download_dir, file_name)
             paths.append(Path(local_path))
             with open(local_path, "wb") as f:
                 f.write(response["Body"].read())
@@ -92,9 +107,11 @@ class S3Client:
 
 
 class AWSService:
-    def __init__(self, queue_name: str, bucket_name: str, local_dir: str) -> None:
+    def __init__(
+        self, queue_name: str, bucket_name: str, local_download_dir: str
+    ) -> None:
         self.sqs_client = SQSClient(queue_name)
-        self.s3_client = S3Client(bucket_name, local_dir)
+        self.s3_client = S3Client(bucket_name, local_download_dir)
 
     def get_files(self) -> List[Path] | None:
         with self.sqs_client.fetch_keys() as messages:
