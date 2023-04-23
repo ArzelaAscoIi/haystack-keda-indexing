@@ -1,7 +1,7 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: file-ingestion-scaled-object
+  name: indexing-consumer-scaled-object
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -11,7 +11,7 @@ spec:
   cooldownPeriod: 300
   idleReplicaCount: 0
   minReplicaCount: 0
-  maxReplicaCount: 10
+  maxReplicaCount: 2
   fallback: # defines a number of replicas to fallback to if a scaler is in an error state.
     failureThreshold: 3
     replicas: 4
