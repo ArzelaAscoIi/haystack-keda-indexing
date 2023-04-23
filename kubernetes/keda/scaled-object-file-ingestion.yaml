@@ -1,0 +1,28 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: file-ingestion-scaled-object
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: indexing-consumer # Mandatory. Must be in the same namespace as the ScaledObject
+  pollingInterval: 30
+  cooldownPeriod: 300
+  idleReplicaCount: 0
+  minReplicaCount: 0
+  maxReplicaCount: 10
+  fallback: # defines a number of replicas to fallback to if a scaler is in an error state.
+    failureThreshold: 3
+    replicas: 4
+  triggers:
+    - type: aws-sqs-queue
+      authenticationRef:
+        name: keda-trigger-auth-aws-credentials
+      metadata:
+        # KEDA will use the value of the environment variable of the `consumer-file-ingestion` containers
+        queueURL: http://localhost:4566/000000000000/test-queue
+        queueLength: "10" # Should roughly equal the number of messages that can be processed in 1 minute
+        awsRegion: "eu-central-1"
+        awsEndpoint: "http://localstack:4566"
+        scaleOnInFlight: "false" # Exclude in-flight messages from the queue length calculation

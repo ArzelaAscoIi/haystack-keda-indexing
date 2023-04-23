@@ -1,0 +1,13 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-trigger-auth-aws-credentials
+  namespace: indexing
+spec:
+  secretTargetRef:
+    - parameter: awsAccessKeyID # Required.
+      name: aws-secrets # Required.
+      key: AWS_ACCESS_KEY_ID # Required.
+    - parameter: awsSecretAccessKey # Required.
+      name: aws-secrets # Required.
+      key: AWS_SECRET_ACCESS_KEY # Required.
