@@ -1,4 +1,5 @@
 # Code for the blog post "Scaling NLP indexing pipelines with KEDA"
+<img src="/assets/keda-haystack.png" width="100%" />
 
 ### Development
 
