@@ -16,6 +16,7 @@ class SQSClient:
             region_name=AWS_REGION,  # allows using localstack
         )
         self.queue_name = queue_name
+        self.queue = self.sqs.get_queue_url(QueueName=self.queue_name)
 
     def publish_key(self, key: str) -> None:
         """
@@ -23,8 +24,8 @@ class SQSClient:
 
         :param key: s3 Key to publish
         """
-        queue = self.sqs.get_queue_url(QueueName=self.queue_name)
-        self.sqs.send_message(QueueUrl=queue["QueueUrl"], MessageBody=key)
+
+        self.sqs.send_message(QueueUrl=self.queue["QueueUrl"], MessageBody=key)
 
     @contextmanager
     def fetch_keys(self) -> Generator[List[str], None, None]:
@@ -32,10 +33,10 @@ class SQSClient:
         Fetch messages from defined queue
         :returns List of keys on s3
         """
-        queue = self.sqs.get_queue_url(QueueName=self.queue_name)
+
         # receive up to 10 messages at once from sqs
         response = self.sqs.receive_message(
-            QueueUrl=queue["QueueUrl"],
+            QueueUrl=self.queue["QueueUrl"],
             MaxNumberOfMessages=10,
             WaitTimeSeconds=0,
         )
@@ -51,7 +52,8 @@ class SQSClient:
             # This will be run after the message was processed
             for message in messages:
                 self.sqs.delete_message(
-                    QueueUrl=queue["QueueUrl"], ReceiptHandle=message["ReceiptHandle"]
+                    QueueUrl=self.queue["QueueUrl"],
+                    ReceiptHandle=message["ReceiptHandle"],
                 )
         except Exception as error:
             raise error
