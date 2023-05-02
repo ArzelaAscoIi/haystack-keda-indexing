@@ -1,6 +1,10 @@
 # Code for the blog post "Scaling NLP indexing pipelines with KEDA"
 <img src="/assets/keda-haystack.png" width="100%" />
 
+Scaling NLP indexing pipelines with KEDA and Haystack — Part 1: The Application ([link](https://medium.com/@ArzelaAscoli/scaling-nlp-indexing-pipelines-with-keda-and-haystack-part-1-the-application-45f54fcabd5d))
+Scaling NLP indexing pipelines with KEDA and Haystack — Part 2: Deployment ([link](https://medium.com/@ArzelaAscoli/scaling-nlp-indexing-pipelines-with-keda-and-haystack-part-2-deployment-8750dc96171f))
+
+
 ### Development
 
 To run the consumer locally against localstack, we need to start localstack by running the following command:
